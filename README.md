@@ -4,6 +4,12 @@ Pretty simple ISBN scan with Google Sheets integration. Made for my mom, who has
 
 ## Dependencies
 - [A Google Cloud Platform project](https://developers.google.com/workspace/guides/create-project) with the [Google Sheets API](https://developers.google.com/sheets/api/quickstart/python) enabled.
+- The [`pip`](https://pypi.org/project/pip/) package manager
+
+## Setup
+```
+pip install -r requirements.txt
+```
 
 ## Usage
 ```
