@@ -4,6 +4,8 @@ import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+
 import requests
 
 SPREADSHEET_ID = '1rzfovc6kHtEPigCBpLA8JYxmyB9uYQh4MN2sNkdWOJo'
@@ -60,6 +62,7 @@ def main():
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
+
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
     # If there are no (valid) credentials available, let the user log in.
@@ -75,6 +78,13 @@ def main():
             token.write(creds.to_json())
 
     service = build('sheets', 'v4', credentials=creds)
+
+    ### Use API key instead of OAuth token (doesn't work)
+    # API_KEY = None
+    # if os.path.exists('api_key.txt'):
+    #     with open('api_key.txt', 'r') as keyfile:
+    #         API_KEY = keyfile.readline()
+    # service = build('sheets', 'v4', developerKey=API_KEY)
 
     while True:
         scan_book(service)
