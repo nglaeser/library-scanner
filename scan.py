@@ -24,9 +24,6 @@ def insert_book_in_sheet(service, author_str, title, shelf, isbn):
 
 def scan_book(service):
     isbn = input("Scan ISBN:\n")
-    # Ender's Game: 9780812550702
-    # La realtà non è come ci appare: 9788860306418
-    # A Man Called Ove: 9781476738024
     shelf = input("Scaffale:\n")
 
     bookinfo = requests.get(f"https://openlibrary.org/isbn/{isbn}.json").json()
