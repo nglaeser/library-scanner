@@ -1,13 +1,10 @@
 # Home Library Scanner
 
-Pretty simple ISBN scan with Google Sheets integration. Made for my mom, who has so many books she sometimes buys another copy of a book without realizing she already owns it.
+Pretty simple ISBN scan with Google Sheets integration. Made for my mom, who has so many books she sometimes buys a *second* copy of a book without realizing she already owns it.
 
 ## Dependencies
 - [A Google Cloud Platform project](https://developers.google.com/workspace/guides/create-project) with the [Google Sheets API](https://developers.google.com/sheets/api/quickstart/python) enabled.
 - The [`pip`](https://pypi.org/project/pip/) package manager
-- [Heroku and its prereqs](https://devcenter.heroku.com/articles/getting-started-with-python)
-    - Python 3.9
-    - The Heroku CLI
 
 ## Setup
 ```
@@ -30,9 +27,5 @@ A Man Called Ove:               9781476738024
 ```
 
 ## Todo
-I can't see my mom running Python from a terminal, so I'd like to rewrite this in Javascript and turn it into a browser plugin. The plugin should
-- get the sheet ID from the current tab's URL
-- always accept keyboard input in the background
-- if it's an ISBN, look up the book data and add it to the spreadsheet
-
-Even better, this could be constantly running on a dedicated Raspberry Pi.
+- I can't see my mom running Python from a terminal, so I'd like to have this running on a dedicated Raspberry Pi
+- Wait a max time (3 seconds?) for shelf number
