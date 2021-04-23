@@ -12,6 +12,8 @@ pip install -r requirements.txt
 echo "YOUR_SHEET_ID_HERE" > sheet_id.txt
 ```
 
+You can find your sheet ID in the Google Sheet's URL: `https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID_HERE/`.
+
 ## Usage
 ```
 python scan.py
