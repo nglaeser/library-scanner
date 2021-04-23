@@ -8,11 +8,16 @@ from google.oauth2.credentials import Credentials
 
 import requests
 
-SPREADSHEET_ID = '1rzfovc6kHtEPigCBpLA8JYxmyB9uYQh4MN2sNkdWOJo'
-#SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 def insert_book_in_sheet(service, author_str, title, shelf, isbn):
+    SPREADSHEET_ID = None
+    if os.path.exists('sheet_id.txt'):
+        with open('sheet_id.txt', 'r') as keyfile:
+            SPREADSHEET_ID = keyfile.readline()
+    else:
+        exit(-1)
+
     # Call the Sheets API
     sheet = service.spreadsheets()
     entry = [author_str, title, shelf, isbn]
@@ -24,7 +29,7 @@ def insert_book_in_sheet(service, author_str, title, shelf, isbn):
 
 def scan_book(service):
     isbn = input("Scan ISBN:\n")
-    shelf = input("Scaffale:\n")
+    shelf = input("Shelf #:\n")
 
     bookinfo = requests.get(f"https://openlibrary.org/isbn/{isbn}.json").json()
 
