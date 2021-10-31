@@ -29,6 +29,22 @@ La realtà non è come ci appare: 9788860306418
 A Man Called Ove:               9781476738024
 ```
 
+### Installing Micropython Packages
+
+In the MicroPython REPL (launch with `./micropython`; Getting Started info [here](https://github.com/micropython/micropython/wiki/Getting-Started)):
+
+```
+import upip
+upip.install("packagename")
+```
+
+For example, `upip.install("os")`.
+
 ## Todo
 - I can't see my mom running Python from a terminal, so I'd like to have this running on a dedicated Raspberry Pi
+  - [Pushing to GSheets using MicroPython](https://github.com/artem-smotrakov/esp32-weather-google-sheets)
+  - https://forum.micropython.org/viewtopic.php?f=15&t=8161
+  - https://docs.micropython.org/en/latest/reference/packages.html#distribution-packages
+  - https://medium.com/google-cloud/connecting-micropython-devices-to-google-cloud-iot-core-3680e632681e
+  - [Raspberry Pi - Getting Started](https://www.raspberrypi.org/products/raspberry-pi-pico/)
 - Wait a max time (3 seconds?) for shelf number
