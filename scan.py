@@ -7,6 +7,7 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 
 import requests
+import xml.etree.ElementTree as ET
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
@@ -33,32 +34,26 @@ def scan_book(service):
     # shelf = input("Shelf #:\n")
 
     try:
-        bookinfo = requests.get(f"https://openlibrary.org/isbn/{isbn}.json").json()
+        xml = requests.get(f"http://classify.oclc.org/classify2/Classify?isbn={isbn}&summary=true")
+        root = ET.fromstring(xml.content)
+        bookinfo = root.find('./*{http://classify.oclc.org}work')
+        # `./*` means any node below (not just direct children)
     except:
-        print("unable to find {} in OpenLibrary".format(isbn))
+        print("unable to find {} in WorldCat".format(isbn))
 
-    # get author
-    authors = []
+    # get author(s)
     try:
-        authors_json = bookinfo['authors']
+        authors = bookinfo.get('author').split("|")
+        # TODO remove authors with "[*]" after their names (editor, translator, etc.) e.g. "Schwarz, Benjamin [Translator]"
+        # also remove years after author names (e.g. "Bonnefoy, Jean, 1950-")
     except:
-        authors_json = []
-    for a in authors_json:
-        try:
-            authors.append(requests.get(f"https://openlibrary.org/{a['key']}.json").json()['name'])
-        except:
-            pass
-
-    author_str = ""
-    for a in authors:
-        lastname_index = a.rfind(" ") + 1
-        author_str += a[lastname_index:] + ", " + a[:lastname_index]
+        # no author info
+        authors = ""
+    authors = [a.strip() for a in authors]
+    author_str = "; ".join(authors)
 
     # get title
-    try:
-        title = bookinfo['title']
-    except: 
-        title = ""
+    title = bookinfo.get('title')
 
     insert_book_in_sheet(service, author_str, title, shelf, isbn)
 
