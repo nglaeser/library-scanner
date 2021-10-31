@@ -14,7 +14,7 @@ def insert_book_in_sheet(service, author_str, title, shelf, isbn):
     SPREADSHEET_ID = None
     if os.path.exists('sheet_id.txt'):
         with open('sheet_id.txt', 'r') as keyfile:
-            SPREADSHEET_ID = keyfile.readline()
+            SPREADSHEET_ID = keyfile.readline().strip()
     else:
         exit(-1)
 
@@ -25,13 +25,17 @@ def insert_book_in_sheet(service, author_str, title, shelf, isbn):
         'values': [entry]
     }
     result = sheet.values().append(spreadsheetId=SPREADSHEET_ID,
-                    range='Sheet1',valueInputOption='RAW',body=body).execute()
+                range='Sheet1',valueInputOption='RAW',body=body).execute()
 
 def scan_book(service):
     isbn = input("Scan ISBN:\n")
-    shelf = input("Shelf #:\n")
+    shelf = ""
+    # shelf = input("Shelf #:\n")
 
-    bookinfo = requests.get(f"https://openlibrary.org/isbn/{isbn}.json").json()
+    try:
+        bookinfo = requests.get(f"https://openlibrary.org/isbn/{isbn}.json").json()
+    except:
+        print("unable to find {} in OpenLibrary".format(isbn))
 
     # get author
     authors = []
