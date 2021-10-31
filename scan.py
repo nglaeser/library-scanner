@@ -38,14 +38,33 @@ def scan_book(service):
         root = ET.fromstring(xml.content)
         bookinfo = root.find('./*{http://classify.oclc.org}work')
         # `./*` means any node below (not just direct children)
+        if bookinfo == None:
+            print("unable to find {} in WorldCat".format(isbn))
     except:
-        print("unable to find {} in WorldCat".format(isbn))
+        print("error querying ISBN API")
 
     # get author(s)
     try:
-        authors = bookinfo.get('author').split("|")
+        authors_raw = bookinfo.get('author').split("|")
         # TODO remove authors with "[*]" after their names (editor, translator, etc.) e.g. "Schwarz, Benjamin [Translator]"
-        # also remove years after author names (e.g. "Bonnefoy, Jean, 1950-")
+        authors = []
+        for a in authors_raw:
+            if "[" not in a:
+                first_comma = a.find(",")
+                # case: "Bonnefoy, Jean, 1950-" 
+                second_comma = a.find(",",first_comma+1)
+                if second_comma != -1:
+                    a = a[:second_comma]
+                # case: "Adams, Douglas 1952-2001"
+                first_digit = -1
+                for i,c in enumerate(a):
+                    if c.isdigit():
+                        first_digit = i
+                        break
+                if first_digit != -1:
+                    a = a[:first_digit]
+
+                authors += [a]
     except:
         # no author info
         authors = ""
@@ -53,7 +72,11 @@ def scan_book(service):
     author_str = "; ".join(authors)
 
     # get title
-    title = bookinfo.get('title')
+    try:
+        title = bookinfo.get('title')
+    except:
+        # no title info
+        title = ""
 
     insert_book_in_sheet(service, author_str, title, shelf, isbn)
 
