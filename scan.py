@@ -49,10 +49,10 @@ def scan_book(service):
         except:
             pass
 
-    author_str = ""
     for a in authors:
         lastname_index = a.rfind(" ") + 1
-        author_str += a[lastname_index:] + ", " + a[:lastname_index]
+        a = a[lastname_index:] + ", " + a[:lastname_index]
+    author_str = "; ".join(authors)
 
     # get title
     try:
