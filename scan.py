@@ -28,11 +28,39 @@ def insert_book_in_sheet(service, author_str, title, shelf, isbn):
     result = sheet.values().append(spreadsheetId=SPREADSHEET_ID,
                 range='Sheet1',valueInputOption='RAW',body=body).execute()
 
-def scan_book(service):
-    isbn = input("Scan ISBN:\n")
-    shelf = ""
-    # shelf = input("Shelf #:\n")
+def openlibrary(isbn):
+    try:
+        bookinfo = requests.get(f"https://openlibrary.org/isbn/{isbn}.json").json()
+    except:
+        print("unable to find {} in OpenLibrary".format(isbn))
+        return -1, None, None
 
+    # get author
+    authors = []
+    try:
+        authors_json = bookinfo['authors']
+    except:
+        authors_json = []
+    for a in authors_json:
+        try:
+            authors.append(requests.get(f"https://openlibrary.org/{a['key']}.json").json()['name'])
+        except:
+            pass
+
+    for a in authors:
+        lastname_index = a.rfind(" ") + 1
+        a = a[lastname_index:] + ", " + a[:lastname_index]
+    author_str = "; ".join(authors)
+
+    # get title
+    try:
+        title = bookinfo['title']
+    except: 
+        title = ""
+
+    return 0, author_str, title
+
+def worldcat(isbn):
     try:
         xml = requests.get(f"http://classify.oclc.org/classify2/Classify?isbn={isbn}&summary=true")
         root = ET.fromstring(xml.content)
@@ -40,8 +68,10 @@ def scan_book(service):
         # `./*` means any node below (not just direct children)
         if bookinfo == None:
             print("unable to find {} in WorldCat".format(isbn))
+            return -1, None, None
     except:
         print("error querying ISBN API")
+        return -1, None, None
 
     # get author(s)
     try:
@@ -77,6 +107,29 @@ def scan_book(service):
     except:
         # no title info
         title = ""
+    
+    status = 1
+    if author_str == "" or title == "":
+        status = 0
+    return status, author_str, title
+
+def scan_book(service):
+    isbn = input("Scan ISBN:\n")
+    shelf = ""
+    # shelf = input("Shelf #:\n")
+    author_str = ""
+    title = ""
+
+    statusOL, author_str, title = openlibrary(isbn)
+    if statusOL != 1:
+        statusWC, author_strWC, titleWC = worldcat(isbn)
+        if statusWC == -1:
+            print("Book not found! Inserting empty row (ISBN only).")
+        # backfill from WC if OL infos are incomplete
+        elif author_str == "":
+            author_str = author_strWC
+        elif title == "":
+            title = titleWC
 
     insert_book_in_sheet(service, author_str, title, shelf, isbn)
 
