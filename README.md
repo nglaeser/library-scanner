@@ -16,7 +16,7 @@ You can find your sheet ID in the Google Sheet's URL: `https://docs.google.com/s
 
 ## Usage
 ```
-python scan.py
+python main.py
 ```
 Will continually prompt for ISBN (required) and shelf number. The idea is that you could hook up a handheld scanner, which functions as a keyboard input, and simply scan books in one after the other.
 

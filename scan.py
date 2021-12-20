@@ -1,117 +1,5 @@
-from __future__ import print_function
-import pickle
-import os.path
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-
-import requests
-import xml.etree.ElementTree as ET
-
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-
-def insert_book_in_sheet(service, author_str, title, shelf, isbn):
-    SPREADSHEET_ID = None
-    if os.path.exists('sheet_id.txt'):
-        with open('sheet_id.txt', 'r') as keyfile:
-            SPREADSHEET_ID = keyfile.readline().strip()
-    else:
-        exit(-1)
-
-    # Call the Sheets API
-    sheet = service.spreadsheets()
-    entry = [author_str, title, shelf, isbn]
-    body = {
-        'values': [entry]
-    }
-    result = sheet.values().append(spreadsheetId=SPREADSHEET_ID,
-                range='Sheet1',valueInputOption='RAW',body=body).execute()
-
-def openlibrary(isbn):
-    try:
-        bookinfo = requests.get(f"https://openlibrary.org/isbn/{isbn}.json").json()
-    except:
-        print("unable to find {} in OpenLibrary".format(isbn))
-        return -1, None, None
-
-    # get author
-    authors = []
-    try:
-        authors_json = bookinfo['authors']
-    except:
-        authors_json = []
-    for a in authors_json:
-        try:
-            authors.append(requests.get(f"https://openlibrary.org/{a['key']}.json").json()['name'])
-        except:
-            pass
-
-    for a in authors:
-        lastname_index = a.rfind(" ") + 1
-        a = a[lastname_index:] + ", " + a[:lastname_index]
-    author_str = "; ".join(authors)
-
-    # get title
-    try:
-        title = bookinfo['title']
-    except: 
-        title = ""
-
-    return 0, author_str, title
-
-def worldcat(isbn):
-    try:
-        xml = requests.get(f"http://classify.oclc.org/classify2/Classify?isbn={isbn}&summary=true")
-        root = ET.fromstring(xml.content)
-        bookinfo = root.find('./*{http://classify.oclc.org}work')
-        # `./*` means any node below (not just direct children)
-        if bookinfo == None:
-            print("unable to find {} in WorldCat".format(isbn))
-            return -1, None, None
-    except:
-        print("error querying ISBN API")
-        return -1, None, None
-
-    # get author(s)
-    try:
-        authors_raw = bookinfo.get('author').split("|")
-        # TODO remove authors with "[*]" after their names (editor, translator, etc.) e.g. "Schwarz, Benjamin [Translator]"
-        authors = []
-        for a in authors_raw:
-            if "[" not in a:
-                first_comma = a.find(",")
-                # case: "Bonnefoy, Jean, 1950-" 
-                second_comma = a.find(",",first_comma+1)
-                if second_comma != -1:
-                    a = a[:second_comma]
-                # case: "Adams, Douglas 1952-2001"
-                first_digit = -1
-                for i,c in enumerate(a):
-                    if c.isdigit():
-                        first_digit = i
-                        break
-                if first_digit != -1:
-                    a = a[:first_digit]
-
-                authors += [a]
-    except:
-        # no author info
-        authors = ""
-    authors = [a.strip() for a in authors]
-    author_str = "; ".join(authors)
-
-    # get title
-    try:
-        title = bookinfo.get('title')
-    except:
-        # no title info
-        title = ""
-    
-    status = 1
-    if author_str == "" or title == "":
-        status = 0
-    return status, author_str, title
+import isbn_api
+from sheets import insert_book_in_sheet
 
 def scan_book(service):
     isbn = input("Scan ISBN:\n")
@@ -120,9 +8,9 @@ def scan_book(service):
     author_str = ""
     title = ""
 
-    statusOL, author_str, title = openlibrary(isbn)
+    statusOL, author_str, title = isbn_api.openlibrary(isbn)
     if statusOL != 1:
-        statusWC, author_strWC, titleWC = worldcat(isbn)
+        statusWC, author_strWC, titleWC = isbn_api.worldcat(isbn)
         if statusWC == -1:
             print("Book not found! Inserting empty row (ISBN only).")
         # backfill from WC if OL infos are incomplete
@@ -132,39 +20,3 @@ def scan_book(service):
             title = titleWC
 
     insert_book_in_sheet(service, author_str, title, shelf, isbn)
-
-def main():
-    ### Login/authorization
-    creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-
-    service = build('sheets', 'v4', credentials=creds)
-
-    ### Use API key instead of OAuth token (doesn't work)
-    # API_KEY = None
-    # if os.path.exists('api_key.txt'):
-    #     with open('api_key.txt', 'r') as keyfile:
-    #         API_KEY = keyfile.readline()
-    # service = build('sheets', 'v4', developerKey=API_KEY)
-
-    while True:
-        scan_book(service)
-
-if __name__ == '__main__':
-    main()
