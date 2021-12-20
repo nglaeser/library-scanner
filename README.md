@@ -31,31 +31,10 @@ Il misterioso manoscritto di Nostratopus:   9788838455131
 [Not found in either catalog]:              9788821557750
 ```
 
-### Installing Micropython Packages
-
-In the MicroPython REPL (launch with `./micropython`; Getting Started info [here](https://github.com/micropython/micropython/wiki/Getting-Started)):
-
-```
-import upip
-upip.install("packagename")
-```
-
-For example, `upip.install("os")`.
-
 ## Todo
-<<<<<<< HEAD
 - [ ] Running on a dedicated Raspberry Pi
     - Cronjob that checks for new GH releases and downloads if there is a newer one?
 - [ ] Shelf number? 
     - Wait a max time (3 seconds?) for shelf number
     - or recognize a different input format for shelf numbers and only input a shelf number when it needs to be changed (otherwise assume it's the previous shelf; maybe until a timeout)
 - [x] Combine both ISBN APIs (first OpenLibrary, then WorldCat as fallback)
-=======
-- I can't see my mom running Python from a terminal, so I'd like to have this running on a dedicated Raspberry Pi
-  - [Pushing to GSheets using MicroPython](https://github.com/artem-smotrakov/esp32-weather-google-sheets)
-  - https://forum.micropython.org/viewtopic.php?f=15&t=8161
-  - https://docs.micropython.org/en/latest/reference/packages.html#distribution-packages
-  - https://medium.com/google-cloud/connecting-micropython-devices-to-google-cloud-iot-core-3680e632681e
-  - [Raspberry Pi - Getting Started](https://www.raspberrypi.org/products/raspberry-pi-pico/)
-- Wait a max time (3 seconds?) for shelf number
->>>>>>> worldcat
