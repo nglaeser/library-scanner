@@ -30,11 +30,3 @@ A Man Called Ove:                           9781476738024
 Il misterioso manoscritto di Nostratopus:   9788838455131
 [Not found in either catalog]:              9788821557750
 ```
-
-## Todo
-- [ ] Running on a dedicated Raspberry Pi
-    - Cronjob that checks for new GH releases and downloads if there is a newer one?
-- [ ] Shelf number? 
-    - Wait a max time (3 seconds?) for shelf number
-    - or recognize a different input format for shelf numbers and only input a shelf number when it needs to be changed (otherwise assume it's the previous shelf; maybe until a timeout)
-- [x] Combine both ISBN APIs (first OpenLibrary, then WorldCat as fallback)
