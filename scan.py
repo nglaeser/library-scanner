@@ -7,6 +7,7 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 
 import requests
+import xml.etree.ElementTree as ET
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
@@ -27,15 +28,12 @@ def insert_book_in_sheet(service, author_str, title, shelf, isbn):
     result = sheet.values().append(spreadsheetId=SPREADSHEET_ID,
                 range='Sheet1',valueInputOption='RAW',body=body).execute()
 
-def scan_book(service):
-    isbn = input("Scan ISBN:\n")
-    shelf = ""
-    # shelf = input("Shelf #:\n")
-
+def openlibrary(isbn):
     try:
         bookinfo = requests.get(f"https://openlibrary.org/isbn/{isbn}.json").json()
     except:
         print("unable to find {} in OpenLibrary".format(isbn))
+        return -1, None, None
 
     # get author
     authors = []
@@ -59,6 +57,79 @@ def scan_book(service):
         title = bookinfo['title']
     except: 
         title = ""
+
+    return 0, author_str, title
+
+def worldcat(isbn):
+    try:
+        xml = requests.get(f"http://classify.oclc.org/classify2/Classify?isbn={isbn}&summary=true")
+        root = ET.fromstring(xml.content)
+        bookinfo = root.find('./*{http://classify.oclc.org}work')
+        # `./*` means any node below (not just direct children)
+        if bookinfo == None:
+            print("unable to find {} in WorldCat".format(isbn))
+            return -1, None, None
+    except:
+        print("error querying ISBN API")
+        return -1, None, None
+
+    # get author(s)
+    try:
+        authors_raw = bookinfo.get('author').split("|")
+        # TODO remove authors with "[*]" after their names (editor, translator, etc.) e.g. "Schwarz, Benjamin [Translator]"
+        authors = []
+        for a in authors_raw:
+            if "[" not in a:
+                first_comma = a.find(",")
+                # case: "Bonnefoy, Jean, 1950-" 
+                second_comma = a.find(",",first_comma+1)
+                if second_comma != -1:
+                    a = a[:second_comma]
+                # case: "Adams, Douglas 1952-2001"
+                first_digit = -1
+                for i,c in enumerate(a):
+                    if c.isdigit():
+                        first_digit = i
+                        break
+                if first_digit != -1:
+                    a = a[:first_digit]
+
+                authors += [a]
+    except:
+        # no author info
+        authors = ""
+    authors = [a.strip() for a in authors]
+    author_str = "; ".join(authors)
+
+    # get title
+    try:
+        title = bookinfo.get('title')
+    except:
+        # no title info
+        title = ""
+    
+    status = 1
+    if author_str == "" or title == "":
+        status = 0
+    return status, author_str, title
+
+def scan_book(service):
+    isbn = input("Scan ISBN:\n")
+    shelf = ""
+    # shelf = input("Shelf #:\n")
+    author_str = ""
+    title = ""
+
+    statusOL, author_str, title = openlibrary(isbn)
+    if statusOL != 1:
+        statusWC, author_strWC, titleWC = worldcat(isbn)
+        if statusWC == -1:
+            print("Book not found! Inserting empty row (ISBN only).")
+        # backfill from WC if OL infos are incomplete
+        elif author_str == "":
+            author_str = author_strWC
+        elif title == "":
+            title = titleWC
 
     insert_book_in_sheet(service, author_str, title, shelf, isbn)
 
