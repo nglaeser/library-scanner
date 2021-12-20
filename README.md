@@ -20,15 +20,21 @@ python scan.py
 ```
 Will continually prompt for ISBN (required) and shelf number. The idea is that you could hook up a handheld scanner, which functions as a keyboard input, and simply scan books in one after the other.
 
-The ISBN is used to look up the book info, which is then appended to the Google Sheet specified by the sheet ID in the file `sheet_id.txt`.
+The ISBN is used to look up the book info, which is then appended to the Google Sheet specified by the sheet ID in the file `sheet_id.txt`. Currently, we search for the ISBN in [OpenLibrary](https://openlibrary.org/) and use [WorldCat](https://www.worldcat.org/) as a fallback.
 
 Example books:
 ```
-Ender's Game:                   9780812550702
-La realtà non è come ci appare: 9788860306418
-A Man Called Ove:               9781476738024
+Ender's Game:                               9780812550702
+La realtà non è come ci appare:             9788860306418
+A Man Called Ove:                           9781476738024
+Il misterioso manoscritto di Nostratopus:   9788838455131
+[Not found in either catalog]:              9788821557750
 ```
 
 ## Todo
-- I can't see my mom running Python from a terminal, so I'd like to have this running on a dedicated Raspberry Pi
-- Wait a max time (3 seconds?) for shelf number
+- [ ] Running on a dedicated Raspberry Pi
+    - Cronjob that checks for new GH releases and downloads if there is a newer one?
+- [ ] Shelf number? 
+    - Wait a max time (3 seconds?) for shelf number
+    - or recognize a different input format for shelf numbers and only input a shelf number when it needs to be changed (otherwise assume it's the previous shelf; maybe until a timeout)
+- [x] Combine both ISBN APIs (first OpenLibrary, then WorldCat as fallback)
