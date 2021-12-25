@@ -8,7 +8,7 @@ Pretty simple ISBN scan with Google Sheets integration. Made for my mom, who has
 
 ## Setup
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 echo "YOUR_SHEET_ID_HERE" > sheet_id.txt
 ```
 
@@ -16,7 +16,7 @@ You can find your sheet ID in the Google Sheet's URL: `https://docs.google.com/s
 
 ## Usage
 ```
-python main.py
+python3 main.py
 ```
 Will continually prompt for ISBN (required) and shelf number. The idea is that you could hook up a handheld scanner, which functions as a keyboard input, and simply scan books in one after the other.
 

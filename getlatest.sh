@@ -15,10 +15,13 @@ cd ~/library-scanner
 git pull origin $tag
 # or the following??
 # git checkout $tag
-chmod +x getlatest.sh
+
 # return to previous directory
 cd -
+cp ~/library-scanner/getlatest.sh .
+chmod +x getlatest.sh
 
 # restart scanner script
-pkill python
-python main.py
+cd ~/library-scanner
+pkill python3
+python3 main.py
