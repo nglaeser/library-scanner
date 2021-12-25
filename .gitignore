@@ -3,8 +3,5 @@ credentials*.json
 token.json*
 sheet_id*.txt
 
-# sample (tutorial) code
-quickstart.py
-
 # py
 __pycache__
